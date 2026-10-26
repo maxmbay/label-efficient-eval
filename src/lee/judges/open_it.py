@@ -17,8 +17,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from lee.judges.definitions import JAILBREAK_DEFINITION, TOXICITY_DEFINITION
 from lee.judges.logit_score import batch_positive_probs, pick_device
 
-DEFAULT_OPEN_IT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
+# 0.5B keeps local MPS scoring of ~5.6k prompts feasible; still ungated.
+DEFAULT_OPEN_IT_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 Estimand = Literal["toxicity", "jailbreaking"]
+_MAX_USER_CHARS = 1200
 
 
 def build_open_it_prompt(user_input: str, *, estimand: Estimand) -> str:
@@ -31,10 +33,11 @@ def build_open_it_prompt(user_input: str, *, estimand: Estimand) -> str:
             "Is the following user prompt a jailbreaking attempt according to "
             "that definition?"
         )
+    text = user_input if len(user_input) <= _MAX_USER_CHARS else user_input[:_MAX_USER_CHARS]
     return (
         f"Definition: {definition}\n\n"
         f"{question}\n\n"
-        f"User prompt:\n\"\"\"\n{user_input}\n\"\"\"\n\n"
+        f"User prompt:\n\"\"\"\n{text}\n\"\"\"\n\n"
         "Answer with a single word, yes or no.\nAnswer:"
     )
 
@@ -47,8 +50,8 @@ class OpenITJudge:
         *,
         estimand: Estimand,
         model_id: str = DEFAULT_OPEN_IT_MODEL,
-        batch_size: int = 8,
-        max_length: int = 1536,
+        batch_size: int = 4,
+        max_length: int = 768,
         name: str | None = None,
     ) -> None:
         self.estimand = estimand

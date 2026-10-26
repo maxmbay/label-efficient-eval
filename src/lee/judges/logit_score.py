@@ -21,7 +21,6 @@ def _resolve_token_id(tokenizer: PreTrainedTokenizerBase, candidates: Sequence[s
     for tok in candidates:
         tid = tokenizer.convert_tokens_to_ids(tok)
         if tid is not None and tid != getattr(tokenizer, "unk_token_id", None):
-            # Also accept encode without specials for plain words.
             return int(tid)
         encoded = tokenizer.encode(tok, add_special_tokens=False)
         if len(encoded) == 1:
@@ -41,8 +40,8 @@ def batch_positive_probs(
 ) -> np.ndarray:
     """P(positive) = softmax over {pos,neg} mass at the last prompt position.
 
-    Restricting the softmax to the two label tokens avoids diluting the score
-    across the full vocabulary and yields a calibrated-ish soft score in (0,1).
+    Applies ``lm_head`` only to the last hidden state per row to avoid
+    materializing full-sequence vocab logits (MPS OOM on long pads).
     """
     device = device or pick_device()
     pos_id = _resolve_token_id(tokenizer, positive_tokens)
@@ -57,12 +56,25 @@ def batch_positive_probs(
     )
     enc = {k: v.to(device) for k, v in enc.items()}
     with torch.inference_mode():
-        out = model(**enc)
-        # Last non-pad token per row
-        attn = enc["attention_mask"]
-        last_idx = attn.sum(dim=1) - 1
-        batch_idx = torch.arange(attn.size(0), device=device)
-        logits = out.logits[batch_idx, last_idx]
+        # Prefer backbone hidden states; fall back to slicing logits if needed.
+        try:
+            base = model.model if hasattr(model, "model") else model.transformer
+            hidden = base(
+                input_ids=enc["input_ids"],
+                attention_mask=enc["attention_mask"],
+                use_cache=False,
+            ).last_hidden_state
+            attn = enc["attention_mask"]
+            last_idx = attn.sum(dim=1) - 1
+            batch_idx = torch.arange(attn.size(0), device=device)
+            last_h = hidden[batch_idx, last_idx]
+            logits = model.lm_head(last_h)
+        except Exception:
+            out = model(**enc, use_cache=False)
+            attn = enc["attention_mask"]
+            last_idx = attn.sum(dim=1) - 1
+            batch_idx = torch.arange(attn.size(0), device=device)
+            logits = out.logits[batch_idx, last_idx]
         pair = torch.stack([logits[:, pos_id], logits[:, neg_id]], dim=-1)
         probs = torch.softmax(pair.float(), dim=-1)[:, 0]
     return probs.detach().cpu().numpy().astype(float)

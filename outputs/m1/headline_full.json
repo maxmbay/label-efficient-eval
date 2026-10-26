@@ -1,0 +1,11 @@
+{
+  "estimand": "toxicity",
+  "eligible": false,
+  "judge": null,
+  "w_ppi_pp": null,
+  "n_classical": null,
+  "labels_saved": null,
+  "message": "No judge met the coverage criterion (|coverage - 0.95| <= MC SE) under PPI++ at n=200. openai_moderation_max: coverage=0.9400\u00b10.0075 eligible=False; weak_keyword: coverage=0.9350\u00b10.0078 eligible=False; open_it_toxicity_crossfit: coverage=0.9420\u00b10.0074 eligible=False",
+  "coverage": null,
+  "coverage_se": null
+}
