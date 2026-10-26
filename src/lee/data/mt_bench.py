@@ -351,6 +351,57 @@ def load_mt_bench(
     return human, gpt4, categories, report
 
 
+# Primary pairwise estimand after load check (analysis_plan.md M2 §4 / §8).
+# gpt-3.5-turbo vs gpt-4: GPT-4 on one side, full gpt4_pair overlap, 105
+# decisive majority units. Locked before the M2 grid.
+PRIMARY_PAIR: tuple[str, str] = ("gpt-3.5-turbo", "gpt-4")
+
+
+def build_pair_population(
+    human: pd.DataFrame,
+    gpt4: pd.DataFrame,
+    *,
+    model_lo: str,
+    model_hi: str,
+) -> pd.DataFrame:
+    """Decisive majority units for one canonical pair, with GPT-4 judge score.
+
+    Columns: unit keys, ``y`` (1 if model_lo wins), ``f`` (GPT-4 score with
+    half-credit on ties / inconsistent), ``question_id``, ``turn``.
+    """
+    if "winner_canon" not in human.columns:
+        human = add_canonical_columns(human)
+    if "winner_canon" not in gpt4.columns:
+        gpt4 = add_canonical_columns(gpt4)
+
+    collapsed = collapse_human_majority(human)
+    keys = list(unit_key_columns())
+    pair = collapsed[
+        (collapsed["model_lo"] == model_lo)
+        & (collapsed["model_hi"] == model_hi)
+        & (~collapsed["majority_winner"].isin(["tie", "majority_tie"]))
+    ].copy()
+    if pair.empty:
+        raise MTBenchLoadError(f"No decisive units for pair {(model_lo, model_hi)}")
+
+    pair["y"] = (pair["majority_winner"] == "model_a").astype(float)
+
+    g = gpt4[
+        (gpt4["model_lo"] == model_lo) & (gpt4["model_hi"] == model_hi)
+    ][keys + ["winner_canon"]].copy()
+    g["f"] = g["winner_canon"].map(
+        lambda w: winner_to_score(w, perspective="model_a", half_credit_ties=True)
+    )
+    g["f"] = g["f"].astype(float)
+    merged = pair.merge(g[keys + ["f"]], on=keys, how="inner", validate="one_to_one")
+    if len(merged) != len(pair):
+        raise MTBenchLoadError(
+            f"GPT-4 judge missing for {len(pair) - len(merged)} / {len(pair)} "
+            f"decisive units on {(model_lo, model_hi)}"
+        )
+    return merged.reset_index(drop=True)
+
+
 def verify_mt_bench(
     human: pd.DataFrame,
     gpt4: pd.DataFrame,

@@ -4,14 +4,14 @@ Primary estimand: P(model_lo wins | not tie) on majority-collapsed human
 labels, with a judge score f on the same units. Algebra matches the scalar
 mean PPI++ used in Milestone 1.
 
-Clustered human-only SEs and Bradley-Terry strengths are stubs for a later
-pass; see analysis_plan.md Milestone 2.
+Bradley-Terry strengths remain stubbed; see analysis_plan.md Milestone 2.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
+from lee.estimators.classical import classical_clustered, classical_clt
 from lee.estimators.ppi import ppi_ci, ppi_mean_ci, ppi_pp_ci
 from lee.estimators.types import IntervalEstimate
 
@@ -56,15 +56,22 @@ def human_only_winrate_clustered(
     question_ids: np.ndarray,
     alpha: float = 0.05,
 ) -> IntervalEstimate:
-    """Human-only win rate with SEs clustered by question_id (stub).
+    """Human-only win rate with SEs clustered by ``question_id``.
 
-    Planned: cluster-robust SE respecting paired structure (Anthropic,
-    arXiv 2411.00640). Not implemented in this scaffold.
+    Paired structure on MT-Bench: multiple turns (and potentially multiple
+    human votes before majority collapse) share a question. Clustering by
+    ``question_id`` follows Anthropic, arXiv 2411.00640.
     """
-    raise NotImplementedError(
-        "Clustered human-only SEs are stubbed; use a simple mean CI for smoke "
-        "tests until the M2 inference pass lands."
-    )
+    return classical_clustered(y, question_ids, alpha=alpha)
+
+
+def human_only_winrate_iid(
+    y: np.ndarray,
+    *,
+    alpha: float = 0.05,
+) -> IntervalEstimate:
+    """Human-only win rate under an iid CLT (diagnostic vs clustered)."""
+    return classical_clt(y, alpha=alpha)
 
 
 def bradley_terry_strengths(

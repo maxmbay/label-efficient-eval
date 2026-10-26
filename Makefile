@@ -1,4 +1,4 @@
-.PHONY: data data-m2 judges m1 m2 figures test test-unit
+.PHONY: data data-m2 judges m1 m2 m2-smoke figures test test-unit
 
 data:
 	@echo "TODO: download ToxicChat / MT-Bench / Criteo via src/lee/data"
@@ -12,8 +12,11 @@ judges:
 m1:
 	@echo "TODO: run Milestone 1 simulation grid (after analysis_plan.md is locked)"
 
+m2-smoke:
+	python -c "from lee.sim.m2 import run_and_save; run_and_save(R=5, smoke=True)"
+
 m2:
-	@echo "TODO: run Milestone 2 simulation grid (after analysis_plan.md M2 is locked and load verifies)"
+	python -c "from lee.sim.m2 import run_and_save; run_and_save(R=1000, smoke=False)"
 
 figures:
 	@echo "TODO: regenerate milestone figures from cached sim outputs"

@@ -219,6 +219,11 @@ section 8). Prefer a pair with GPT-4 as one side if coverage is adequate;
 document the choice in the load report and do not change it after the main
 grid starts.
 
+**Primary pair (locked after load, 2026-10-26):** canonical
+`(gpt-3.5-turbo, gpt-4)`. Decisive majority units with GPT-4 judge overlap:
+$N = 105$. Truth win rate $P(\texttt{gpt-3.5-turbo} \succ \texttt{gpt-4} \mid
+\text{not tie}) \approx 0.324$ on that population.
+
 ### 5. Judges
 
 1. **In-data GPT-4 pairwise votes** (`gpt4_pair` split). Align to human units
@@ -271,23 +276,29 @@ Dawid-Skene style with partial pooling. Applied study, not a new method.
   grid as PPI++. Beating PPI++ is not required; narrower intervals with worse
   coverage under misspecification is a valid finding if reported cleanly.
 
-### 8. Headline definition (LOCKED form; pair chosen after load)
+### 8. Headline definition (LOCKED form; pair and n amended after load)
 
-**Pre-chosen label budget:** $n = 200$ human-labeled units (majority-
-collapsed), same spirit as Milestone 1.
+**Pre-chosen pair:** `(gpt-3.5-turbo, gpt-4)` (section 4).
 
-**Definition.** For the pre-chosen pair $(A,B)$, among judges whose empirical
-coverage of the nominal **95%** PPI++ interval is within Monte Carlo SE of
-95%, take the best judge by mean interval width at $n = 200$. Let
-$w_{\mathrm{PPI++}}$ be that width. Let $n_{\mathrm{classical}}$ be the
-smallest classical (human-only) size on the grid with mean width
+**Label budget:** the plan originally used $n = 200$ (Milestone 1 spirit).
+After load, decisive $N = 105$ for the primary pair, so $n = 200$ is
+impossible. **Amended locked budget: $n = 50$** (largest planned grid point
+that leaves an unlabeled remainder on this pair). Do not change again after
+the main grid starts. Smoke grid: $n \in \{30, 50, 80\}$. Full grid: plan
+set $\{50, 100, 200, \ldots\}$ with automatic skip when $n \ge N$.
+
+**Definition.** For the primary pair, among judges whose empirical coverage
+of the nominal **95%** PPI++ interval is within Monte Carlo SE of 95%, take
+the best judge by mean interval width at $n = 50$. Let $w_{\mathrm{PPI++}}$
+be that width. Let $n_{\mathrm{classical}}$ be the smallest classical
+(human-only, clustered SE) size on the grid with mean width
 $\le w_{\mathrm{PPI++}}$. Report
 
 $$
 \text{labels saved} = 1 - \frac{n}{n_{\mathrm{classical}}}
 $$
 
-at $n = 200$, and the mean-width curve vs $n$. If no judge meets coverage,
+at $n = 50$, and the mean-width curve vs $n$. If no judge meets coverage,
 report that failure and do not invent a savings percentage. Also report
 inter-human agreement as an interpretive ceiling. Never round a result up.
 

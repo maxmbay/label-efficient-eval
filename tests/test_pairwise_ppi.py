@@ -7,7 +7,6 @@ import pytest
 
 from lee.estimators.pairwise import (
     bradley_terry_strengths,
-    human_only_winrate_clustered,
     pairwise_winrate_ppi,
     pairwise_winrate_ppi_pp,
 )
@@ -43,10 +42,6 @@ def test_pairwise_ppi_pp_synthetic() -> None:
 
 
 def test_stubs_raise() -> None:
-    with pytest.raises(NotImplementedError):
-        human_only_winrate_clustered(
-            np.array([1.0, 0.0]), question_ids=np.array([1, 1])
-        )
     with pytest.raises(NotImplementedError):
         bradley_terry_strengths(
             np.array(["model_a"]),
