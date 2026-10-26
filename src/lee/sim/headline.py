@@ -9,6 +9,7 @@ qualify, report failure (no savings percentage).
 
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass
 
 import pandas as pd
@@ -16,6 +17,13 @@ import pandas as pd
 HEADLINE_N = 200
 NOMINAL_COVERAGE = 0.95
 ALPHA = 0.05
+
+
+def format_labels_saved_pct(labels_saved: float, *, decimals: int = 1) -> str:
+    """Format a fraction as a percent without rounding up."""
+    scale = 10**decimals
+    floored = math.floor(labels_saved * 100 * scale) / scale
+    return f"{floored:.{decimals}f}%"
 
 
 @dataclass(frozen=True)

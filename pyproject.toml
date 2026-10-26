@@ -17,7 +17,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
 jax = ["jax", "equinox", "numpyro"]
-modal = ["modal"]
+modal = [
+    "accelerate>=1.15.0",
+    "huggingface-hub>=2.3.0",
+    "modal",
+    "torch>=2.14.1",
+    "transformers>=5.20.2",
+]
 
 [build-system]
 requires = ["hatchling"]

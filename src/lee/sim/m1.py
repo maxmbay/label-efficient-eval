@@ -25,6 +25,8 @@ from lee.estimators import (
     ppi_pp_ci,
 )
 from lee.judges import ACTIVE_M1_JUDGES
+from lee.judges.cache import align_scores, judge_cache_dir, load_scores
+from lee.sim.headline import compute_headline
 from lee.sim.metrics import SimMetrics, summarize_runs
 
 SEED_ROOT = 20261026
@@ -100,6 +102,8 @@ def run_m1_grid(
         y = population[estimand].to_numpy(dtype=float)
         truth = _truth(y)
         for judge_name, f in judge_scores.items():
+            if not _judge_matches_estimand(judge_name, estimand):
+                continue
             f = np.asarray(f, dtype=float)
             if f.shape[0] != n_pop:
                 raise ValueError(
@@ -167,15 +171,51 @@ def run_m1_grid(
     return results
 
 
+def _judge_matches_estimand(judge_name: str, estimand: str) -> bool:
+    """Estimand-specific judges (open_it_*) only run on their target label."""
+    if judge_name.startswith("open_it_toxicity"):
+        return estimand == "toxicity"
+    if judge_name.startswith("open_it_jailbreaking"):
+        return estimand == "jailbreaking"
+    return True
+
+
 def score_active_judges(population: pd.DataFrame) -> dict[str, np.ndarray]:
+    """Score cheap in-process judges (openai_mod, weak keyword)."""
     scores: dict[str, np.ndarray] = {}
     for cls in ACTIVE_M1_JUDGES:
         judge = cls()
         try:
             scores[judge.name] = judge.score(population)
         except NotImplementedError as exc:
-            # Stubs should not be in ACTIVE; keep defensive.
             raise RuntimeError(str(exc)) from exc
+    return scores
+
+
+def load_cached_judges(population: pd.DataFrame) -> dict[str, np.ndarray]:
+    """Load any parquet caches under data/cache/judges/."""
+    scores: dict[str, np.ndarray] = {}
+    root = judge_cache_dir()
+    for path in sorted(root.glob("*.parquet")):
+        name = path.stem
+        cached = load_scores(name)
+        if cached is None:
+            continue
+        scores[name] = align_scores(population, cached)
+    return scores
+
+
+def collect_judge_scores(population: pd.DataFrame) -> dict[str, np.ndarray]:
+    """Merge in-process judges with on-disk cached ladder scores."""
+    scores = score_active_judges(population)
+    cached = load_cached_judges(population)
+    overlap = set(scores) & set(cached)
+    if overlap:
+        # Prefer cache for names that exist on disk (reproducible ladder runs).
+        for name in overlap:
+            scores[name] = cached[name]
+    for name, arr in cached.items():
+        scores[name] = arr
     return scores
 
 
@@ -202,7 +242,7 @@ def run_and_save(
     _all_rows, population, report = load_toxicchat(strict=True)
     (out / "load_report.json").write_text(report.to_json() + "\n")
 
-    judge_scores = score_active_judges(population)
+    judge_scores = collect_judge_scores(population)
     # Cache judge vectors (floats only; no raw text).
     cache = out / "judge_scores"
     cache.mkdir(exist_ok=True)
@@ -214,20 +254,6 @@ def run_and_save(
         n_grid=tuple(n_grid) if n_grid is not None else DEFAULT_N_GRID,
     )
     tag = "smoke" if smoke or R < 1000 else "full"
-    meta = {
-        "tag": tag,
-        "R": cfg.R,
-        "n_grid": list(cfg.n_grid),
-        "seed_root": cfg.seed_root,
-        "N": len(population),
-        "truth": {
-            e: float(population[e].astype(float).mean()) for e in cfg.estimands
-        },
-        "judges": list(judge_scores),
-        "headline_n": 200,
-        "headline_status": "pending_locked_run",
-    }
-    (out / f"run_meta_{tag}.json").write_text(json.dumps(meta, indent=2) + "\n")
 
     def _progress(msg: str) -> None:
         print(msg, flush=True)
@@ -244,5 +270,25 @@ def run_and_save(
     (out / f"metrics_{tag}.json").write_text(
         json.dumps([asdict(m) for m in metrics], indent=2) + "\n"
     )
+
+    headline = compute_headline(frame, estimand="toxicity")
+    meta = {
+        "tag": tag,
+        "R": cfg.R,
+        "n_grid": list(cfg.n_grid),
+        "seed_root": cfg.seed_root,
+        "N": len(population),
+        "truth": {
+            e: float(population[e].astype(float).mean()) for e in cfg.estimands
+        },
+        "judges": list(judge_scores),
+        "headline_n": 200,
+        "headline": headline.to_dict(),
+    }
+    (out / f"run_meta_{tag}.json").write_text(json.dumps(meta, indent=2) + "\n")
+    (out / f"headline_{tag}.json").write_text(
+        json.dumps(headline.to_dict(), indent=2) + "\n"
+    )
+    print(headline.message, flush=True)
     print(f"Wrote {csv_path}", flush=True)
     return out
