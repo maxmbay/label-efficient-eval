@@ -1,0 +1,29 @@
+{
+  "tag": "full",
+  "R": 1000,
+  "n_grid": [
+    50,
+    100,
+    200,
+    400,
+    800,
+    1600
+  ],
+  "n_grid_run": [
+    50,
+    100
+  ],
+  "seed_root": 20261026,
+  "subset_seed_formula": "SEED_ROOT + 2_000_003 * n + r",
+  "N": 105,
+  "pair": [
+    "gpt-3.5-turbo",
+    "gpt-4"
+  ],
+  "truth_winrate_model_lo": 0.3238095238095238,
+  "judge": "gpt4_pair",
+  "headline_n_plan": 200,
+  "headline_n_amended": 50,
+  "headline_note": "Plan n=200 exceeds decisive N for the primary pair; amended headline budget is n=50.",
+  "inter_human_agree_nontie": 0.8270967741935484
+}

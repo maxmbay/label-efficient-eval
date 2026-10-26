@@ -1,0 +1,10 @@
+{
+  "n": 50,
+  "alpha": 0.05,
+  "judges_meeting_coverage": [],
+  "best_judge": null,
+  "w_ppi_pp": null,
+  "n_classical": null,
+  "labels_saved": null,
+  "message": "No judge meets nominal 95% coverage within Monte Carlo SE at n=50 under ppi_pp. Do not report a labels-saved percentage. Detail: gpt4_pair: coverage=0.989 (SE=0.003, width=0.252)"
+}

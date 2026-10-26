@@ -41,36 +41,17 @@ def test_pairwise_ppi_pp_synthetic() -> None:
     assert est1.lam == pytest.approx(1.0)
 
 
-def test_stubs_raise() -> None:
+def test_bt_pairwise_stub_and_judge_error_constants() -> None:
     with pytest.raises(NotImplementedError):
         bradley_terry_strengths(
             np.array(["model_a"]),
             np.array(["a"]),
             np.array(["b"]),
         )
-    with pytest.raises(NotImplementedError):
-        build_model(
-            JudgeErrorData(
-                unit_index=None,
-                judge_index=None,
-                category_index=None,
-                label_index=None,
-                a_presented_first=None,
-                is_human=None,
-                meta={},
-            )
-        )
-    with pytest.raises(NotImplementedError):
-        fit_nuts(
-            JudgeErrorData(
-                unit_index=None,
-                judge_index=None,
-                category_index=None,
-                label_index=None,
-                a_presented_first=None,
-                is_human=None,
-                meta={},
-            )
-        )
     assert OUTCOME_CLASSES == ("model_a", "model_b", "tie")
     assert N_OUTCOMES == 3
+    # build_model / fit_nuts are implemented; smoke coverage lives in
+    # scripts/run_m2_judge_error.py (optional jax extra).
+    _ = JudgeErrorData
+    _ = build_model
+    _ = fit_nuts

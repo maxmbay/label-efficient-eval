@@ -1,0 +1,2 @@
+estimator,judge,estimand,n,R,alpha,coverage,coverage_se,mean_width,bias,rmse,mean_lam
+judge_error_nuts,gpt4_pair+humans,winrate:gpt-3.5-turbo_vs_gpt-4,50,20,0.05,1.0,0.0,0.9294607344304676,0.1735855057335967,0.1776494100973455,
