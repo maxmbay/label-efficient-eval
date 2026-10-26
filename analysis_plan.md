@@ -123,7 +123,12 @@ bias, and RMSE. Never round a result up.
 - Label budgets $n \in \{50, 100, 200, 400, 800, 1600\}$.
 - For each $n$, draw $R = 1000$ random labeled subsets from the analysis
   population; remainder are judge-only.
-- Fixed seeds (document in code and here when the run starts).
+- Fixed seeds (locked): `SEED_ROOT = 20261026`. Labeled subset draw $r$ at
+  budget $n$ uses `seed = SEED_ROOT + 1_000_003 * n + r`
+  (`lee.sim.m1.subset_seed`).
+- Smoke path: same grid with $R = 5$ (`make m1` / `make m1-smoke`) to validate
+  the pipeline. Full path: `make m1-full` ($R = 1000$). Headline number only
+  from a full locked run.
 - Metrics: empirical coverage (90%, 95%) with Monte Carlo SE; mean interval
   width; bias; RMSE.
 

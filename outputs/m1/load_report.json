@@ -1,0 +1,24 @@
+{
+  "n_train": 5082,
+  "n_test": 5083,
+  "n_total": 10165,
+  "n_human": 5654,
+  "n_auto": 4511,
+  "human_frac": 0.556222331529759,
+  "tox_rate_all": 0.07338908017707821,
+  "jb_rate_all": 0.020068863748155436,
+  "tox_rate_human": 0.13194198797311638,
+  "jb_rate_human": 0.03608065086664308,
+  "paper_tox_rate": 0.071,
+  "paper_jb_rate": 0.0175,
+  "paper_first_stage_unlabeled_frac": 0.61,
+  "hf_card_n_total": 10165,
+  "hf_card_n_human": 5654,
+  "semantics_ok": true,
+  "counts_match_hf_card": true,
+  "notes": [
+    "Paper (arXiv 2310.17389) describes a first-stage process where about 61% of prompts were never shown to humans (Perspective below ~0.037). The released toxicchat0124 set has 44.4% with human_annotation=False (4511/10165), matching the HF card (5654 human annotations). We treat HF-card counts as authoritative for this subset and keep population = human_annotation==True.",
+    "Paper overall rates (context): tox 7.10%, jb 1.75%. Observed all-rows: tox 7.34%, jb 2.01% (HF card: 7.33%, 2.01%). Human-annotated subset: tox 13.19%, jb 3.61%.",
+    "Judge score: openai_moderation summarized as max category score (documented in lee.judges.openai_moderation)."
+  ]
+}

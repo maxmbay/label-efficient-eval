@@ -29,3 +29,6 @@ packages = ["src/lee"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "integration: hits the network or on-disk ToxicChat cache",
+]

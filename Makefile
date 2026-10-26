@@ -1,16 +1,26 @@
-.PHONY: data judges m1 figures test
+.PHONY: data m1 m1-smoke m1-full figures test lint
+
+PYTHON ?= uv run python
+R_FULL ?= 1000
+R_SMOKE ?= 5
 
 data:
-	@echo "TODO: download ToxicChat / MT-Bench / Criteo via src/lee/data"
+	$(PYTHON) -c "from lee.data import load_toxicchat; _, h, r = load_toxicchat(strict=True); print(r.to_json())"
 
-judges:
-	@echo "TODO: run judge ladder; cache outputs under data/cache"
+m1-smoke:
+	$(PYTHON) scripts/run_m1.py --smoke --R $(R_SMOKE)
 
-m1:
-	@echo "TODO: run Milestone 1 simulation grid (after analysis_plan.md is locked)"
+m1-full:
+	$(PYTHON) scripts/run_m1.py --R $(R_FULL)
+
+# Default m1 target: smoke (R=5). Full R=1000: `make m1-full`.
+m1: m1-smoke
 
 figures:
-	@echo "TODO: regenerate milestone figures from cached sim outputs"
+	$(PYTHON) -m lee.figures.m1
 
 test:
-	pytest -q
+	$(PYTHON) -m pytest -q
+
+lint:
+	uv run ruff check src tests scripts
