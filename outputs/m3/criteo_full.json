@@ -1,0 +1,86 @@
+{
+  "smoke": false,
+  "load_report": {
+    "n_rows_file": 13979592,
+    "n_rows_used": 500000,
+    "subsampled": true,
+    "subsample_n": 500000,
+    "seed": 20261026,
+    "treatment_rate": 0.850452,
+    "visit_rate": 0.047248,
+    "conversion_rate": 0.002958,
+    "criteo_card_n_rows": 25309483,
+    "tfds_train_n_rows": 13979592,
+    "row_count_matches_criteo_card": false,
+    "notes": [
+      "Downloaded/cached at /Users/maxwellbay/projects/label-efficient-eval-m3/data/raw/criteo/criteo-research-uplift-v2.1.csv.gz.",
+      "Criteo AI Lab card claims 25,309,483 rows; TFDS criteo train split lists 13,979,592.",
+      "Loaded cached subsample from /Users/maxwellbay/projects/label-efficient-eval-m3/data/raw/criteo/subsample_500000_seed20261026.parquet.",
+      "Observed file data rows (from meta): 13,979,592.",
+      "File row count does not match the Criteo card; proceeding with the observed count and recording the discrepancy."
+    ]
+  },
+  "feature_cols": [
+    "f0",
+    "f1",
+    "f2",
+    "f3",
+    "f4",
+    "f5",
+    "f6",
+    "f7",
+    "f8",
+    "f9",
+    "f10",
+    "f11"
+  ],
+  "dim": {
+    "estimate": 0.010629091137267975,
+    "se": 0.000775055254051941,
+    "lower": 0.009110010753297629,
+    "upper": 0.012148171521238321,
+    "var": 6.007106468335189e-07,
+    "method": "dim"
+  },
+  "cupac": {
+    "estimate": 0.0069838347740053194,
+    "se": 0.0006471735296172945,
+    "lower": 0.005715397964207756,
+    "upper": 0.008252271583802883,
+    "var": 4.188335774373072e-07,
+    "method": "cupac_lam_1",
+    "lam": 1.0
+  },
+  "variance_ratio_dim_over_cupac": 1.434246629673419,
+  "equivalent_n_factor": 1.434246629673419,
+  "ppi_identity": {
+    "cupac_like": 0.046944364920695314,
+    "ppi_like": 0.046944364920695314,
+    "lam": 0.5030253659580579,
+    "abs_err": 0.0,
+    "rel_err": 0.0,
+    "pass": true
+  },
+  "aa": {
+    "R": 200,
+    "n_control": 74774,
+    "max_control": 100000,
+    "dim_fpr": 0.045,
+    "cupac_fpr": 0.065,
+    "alpha": 0.05,
+    "seed": 20261043,
+    "note": "Outcome model cross-fit once on control; fake arms re-drawn each replicate. CUPAC adjustment uses fixed oof predictions."
+  },
+  "headline": {
+    "variance_reduction_factor": 1.434246629673419,
+    "equivalent_n_factor": 1.434246629673419,
+    "dim_ate": 0.010629091137267975,
+    "cupac_ate": 0.0069838347740053194,
+    "aa_dim_fpr": 0.045,
+    "aa_cupac_fpr": 0.065,
+    "subsampled": true,
+    "n_rows_used": 500000,
+    "n_rows_file": 13979592
+  },
+  "databricks_status": "not_configured_on_this_machine; local pandas subsample path used"
+}

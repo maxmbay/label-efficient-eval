@@ -8,6 +8,7 @@ dependencies = [
   "numpy",
   "scipy",
   "pandas",
+  "pyarrow",
   "scikit-learn",
   "matplotlib",
   "datasets",
@@ -16,8 +17,15 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+spark = ["pyspark>=3.5"]
 jax = ["jax", "equinox", "numpyro"]
-modal = ["modal"]
+modal = [
+    "accelerate>=1.15.0",
+    "huggingface-hub>=2.3.0",
+    "modal",
+    "torch>=2.14.1",
+    "transformers>=5.20.2",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -29,3 +37,6 @@ packages = ["src/lee"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "integration: hits the network or on-disk dataset cache",
+]
