@@ -142,18 +142,183 @@ panel underneath with the 95% line and its Monte Carlo band.
 
 ---
 
-## Milestone 2: MT-Bench model comparison (STUB)
+## Milestone 2: MT-Bench model comparison (LOCKED plan; headline after load)
 
-**Status: STUB.** Lock this section before the M2 grid.
+**Status: LOCKED for design.** Headline number is defined below but not yet
+filled; commit this section before the main M2 simulation grid. No main M2
+run has been started. Scaffold loaders and model stubs first; open-weight
+re-judging and the full grid come after data verification.
 
-- Data: `lmsys/mt_bench_human_judgments` (`human`, `gpt4_pair`).
-- Unit: (question, turn, model pair). Pairwise win rates among non-tie votes,
-  then Bradley-Terry across six models. Tie handling TBD in the lock.
-- Inference: human-only (clustered SEs); PPI++ on win rates; hierarchical
-  judge-error model in NumPyro (Dawid-Skene style with partial pooling and
-  position bias).
-- Same subsampling design as M1 for coverage/width comparison.
-- Report inter-human agreement as the ceiling on any judge.
+### 1. Question
+
+Which of six chat models wins, by how much, and how many human votes does that
+take when an LLM judge votes on everything?
+
+### 2. Data and population
+
+- Dataset: `lmsys/mt_bench_human_judgments` (CC BY 4.0).
+- Splits: `human` (about 3.3k expert pairwise votes) and `gpt4_pair` (about
+  2.4k GPT-4 judge votes). Verify counts and columns on load; stop and report
+  if they disagree with the dataset card by more than a documented tolerance.
+- Columns expected: `question_id`, `model_a`, `model_b`, `winner`
+  (`model_a`, `model_b`, `tie`), `judge`, `conversation_a`, `conversation_b`,
+  `turn`.
+- Six models: GPT-4, GPT-3.5-turbo, Claude-v1, Vicuna-13B, Alpaca-13B,
+  LLaMA-13B. Eighty questions; several human judges per item.
+- Question categories (writing, roleplay, reasoning, math, coding, extraction,
+  STEM, humanities) from the MT-Bench question file in lm-sys/FastChat:
+  `fastchat/llm_judge/data/mt_bench/question.jsonl`. Verify the path on fetch;
+  cache a local copy under `data/cache/` (gitignored), never commit raw data.
+- **Unit of analysis:** `(question_id, turn, model_a, model_b)` after
+  canonicalizing pair order (lexicographic on model names; flip `winner`
+  when swapping). Multiple human votes on the same unit are retained for
+  agreement analysis and for the hierarchical model; PPI++ pairwise win-rate
+  simulations first collapse to one label per unit via majority vote among
+  non-tie human votes (ties in the majority: drop that unit from the primary
+  estimand and report the drop count).
+
+### 3. Tie handling (LOCKED)
+
+1. **Primary pairwise estimand (non-tie conditional).** For a fixed ordered
+   pair $(A,B)$, let $Y=1$ if the (majority) human winner is $A$, $Y=0$ if
+   $B$, after discarding votes with `winner == tie`. The estimand is
+   $P(A \succ B \mid \text{not tie})$ among analysis units that have a
+   decisive majority. Report the human tie rate separately.
+2. **Sensitivity.** Half-credit: treat each tie as $Y=0.5$ when forming a
+   win rate (Bradley-Terry / soft labels). Report beside the primary
+   estimand; do not use it for the locked headline unless primary coverage
+   fails and the plan is explicitly amended.
+3. **Hierarchical judge-error model.** Latent true preference
+   $z \in \{A, B, \mathrm{tie}\}$ per unit; ties are a third class, not
+   discarded inside that model.
+
+Do not silently drop ties without reporting rates. Do not code ties as wins
+for either side in the primary estimand.
+
+### 4. Estimands
+
+Let $\mathcal{P}$ be the set of well-covered unordered model pairs (both
+directions observed enough after load; document the minimum vote threshold
+chosen after the load report, suggested floor: at least 50 non-tie human
+majority units).
+
+- **Pairwise win rate (primary for PPI++):** for each ordered pair $(A,B)$ in
+  $\mathcal{P}$,
+  $\theta_{AB} = P(A \succ B \mid \text{not tie})$ on the majority-collapsed
+  human labels.
+- **Bradley-Terry strengths (secondary):** strengths $\beta_m$ for the six
+  models fit on non-tie human majorities (and separately under half-credit
+  sensitivity). Report win-rate contrasts implied by $\beta$, not only the
+  latent scale.
+- **Held-out human-majority target for hierarchical evaluation:** same
+  $\theta_{AB}$ (or BT contrast) on units held out of the human subsample,
+  so coverage is comparable to PPI++.
+
+Headline uses one pre-chosen well-covered pair after the load check (see
+section 8). Prefer a pair with GPT-4 as one side if coverage is adequate;
+document the choice in the load report and do not change it after the main
+grid starts.
+
+### 5. Judges
+
+1. **In-data GPT-4 pairwise votes** (`gpt4_pair` split). Align to human units
+   by `(question_id, turn, canonical pair)`. Soft score for PPI: map
+   `winner` to $\{0,1\}$ on non-ties; for units where GPT-4 ties, use $0.5$
+   as $f(X)$ (documented). Measure position bias when both orders exist.
+2. **Open-weight re-judges (later).** One or two open-weight judges scoring
+   from `conversation_a` / `conversation_b` with FastChat's pairwise judge
+   prompt, both orders. Cache outputs under `data/cache/` (gitignored).
+3. **Humans as a rater class.** Individual human judges enter the hierarchical
+   model; report inter-human agreement as the ceiling on any LLM judge
+   (pairwise percent agreement and Cohen's $\kappa$ on overlapping units,
+   non-tie and three-way).
+
+If a judge is calibrated using labels, cross-fit. PPI requires the predictor
+to be independent of the labeled sample used for the rectifier.
+
+### 6. Estimators
+
+| Estimator | Role |
+| --- | --- |
+| Human only | Mean win rate on the labeled subsample; SEs clustered by `question_id` and respecting paired structure (Anthropic, "Adding Error Bars to Evals", arXiv 2411.00640). |
+| Judge only | Mean of GPT-4 (or open-weight) mapped scores on all units. Bias diagnostic. |
+| PPI | $\lambda = 1$ on the binary (or half-credit) win indicator. |
+| PPI++ | Power-tuned $\lambda$, same scalar-mean form as Milestone 1. |
+| Hierarchical judge error | NumPyro model in `src/lee/models/judge_error.py` (section 7). |
+
+PPI algebra is the Milestone 1 mean estimator with $Y$ the human win indicator
+and $f$ the judge score on the same units. Reference: `ppi-python`;
+implement in-repo and cross-check.
+
+### 7. Hierarchical judge-error model (outline; implement after stubs)
+
+Dawid-Skene style with partial pooling. Applied study, not a new method.
+
+- **Latent preference** $z_i \in \{A, B, \mathrm{tie}\}$ per analysis unit $i$;
+  enumerate (or marginalize) in the likelihood.
+- **Confusion matrices.** Each judge $j$ has a category-specific confusion
+  matrix over $\{A,B,\mathrm{tie}\}$, partially pooled toward that judge's
+  overall matrix (logistic-normal or hierarchical Dirichlet). Categories from
+  the MT-Bench question file.
+- **Position bias.** Additive (on the appropriate scale) term for LLM judges
+  when $A$ is presented first vs second.
+- **Humans.** One rater class with individual deviations from the class mean
+  confusion matrix.
+- **Inference.** NUTS first at this size; SVI only if needed.
+- **Evaluation.** Fit with $n$ human labels plus all judge labels; compare
+  posterior intervals for $\theta_{AB}$ (or BT contrasts) to the held-out
+  human-majority estimand on coverage and width under the same subsampling
+  grid as PPI++. Beating PPI++ is not required; narrower intervals with worse
+  coverage under misspecification is a valid finding if reported cleanly.
+
+### 8. Headline definition (LOCKED form; pair chosen after load)
+
+**Pre-chosen label budget:** $n = 200$ human-labeled units (majority-
+collapsed), same spirit as Milestone 1.
+
+**Definition.** For the pre-chosen pair $(A,B)$, among judges whose empirical
+coverage of the nominal **95%** PPI++ interval is within Monte Carlo SE of
+95%, take the best judge by mean interval width at $n = 200$. Let
+$w_{\mathrm{PPI++}}$ be that width. Let $n_{\mathrm{classical}}$ be the
+smallest classical (human-only) size on the grid with mean width
+$\le w_{\mathrm{PPI++}}$. Report
+
+$$
+\text{labels saved} = 1 - \frac{n}{n_{\mathrm{classical}}}
+$$
+
+at $n = 200$, and the mean-width curve vs $n$. If no judge meets coverage,
+report that failure and do not invent a savings percentage. Also report
+inter-human agreement as an interpretive ceiling. Never round a result up.
+
+Hierarchical-model intervals are reported beside PPI++ on the same figure or
+a companion panel; they do not replace the PPI++ headline unless a later
+locked amendment says so.
+
+### 9. Simulation grid (mirrors Milestone 1)
+
+- Label budgets $n \in \{50, 100, 200, 400, 800, 1600\}$ (cap at the number of
+  decisive majority units for the chosen pair; skip or mark $n$ above that
+  cap).
+- For each $n$, draw $R = 1000$ random labeled subsets from the pair's
+  analysis units; remainder are judge-only for PPI.
+- Fixed seeds: `SEED_ROOT = 20261026`. Subset draw $r$ at budget $n$ uses
+  `seed = SEED_ROOT + 2_000_003 * n + r` (M2 offset; distinct from M1).
+- Smoke: $R = 5$. Full: $R = 1000$. Headline only from a full locked run.
+- Metrics: empirical coverage (90%, 95%) with Monte Carlo SE; mean width;
+  bias; RMSE. For hierarchical fits, same coverage/width on posterior
+  intervals vs held-out human majority (compute budget may force a smaller
+  $R$ for the Bayes arm; if so, document and still report Monte Carlo SEs).
+
+### 10. Figure and deliverables
+
+- Mean width vs $n$ (log $x$), classical / PPI / PPI++ / judge-only; coverage
+  panel with 95% line and Monte Carlo band. Optional companion panel for
+  hierarchical posterior width and coverage.
+- This plan committed before the main M2 grid.
+- Write-up about 1,000–1,500 words in `docs/`.
+- README: add model-win-rate clause to the resume line only after M2 headline
+  exists and Max approves.
 
 ---
 
