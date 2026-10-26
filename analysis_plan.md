@@ -241,15 +241,15 @@ sequence clears a decision threshold, what is the stopping-time distribution
 and the error rate under repeated sampling?
 
 **Literature (cite; do not claim novelty).** Fixed-time PPI is Angelopoulos et
-al. Anytime-valid extensions of PPI exist: Csillag, Duchi, and Zhivotovskiy
-(or verify author list on load), "Anytime-valid, Bayes-assisted,
-Prediction-Powered Inference" (arXiv 2505.18000; NeurIPS 2025), using Ville /
-method-of-mixtures asymptotic confidence sequences. Betting confidence
-sequences for bounded means: Waudby-Smith and Ramdas, JRSS-B 2024. This
-milestone applies a **betting CS to the PPI rectifier stream** (labeled
-residuals after subtracting a fixed judge), which is a practical stopping rule
-aligned with that literature; it is not a reimplementation of the full
-asymptotic PPI CS of arXiv 2505.18000.
+al. Anytime-valid PPI confidence sequences: Kilian, Cortinovis, and Caron,
+"Anytime-valid, Bayes-assisted, Prediction-Powered Inference" (arXiv
+2505.18000; NeurIPS 2025), using Ville / method-of-mixtures asymptotic
+confidence sequences. Related: Csillag et al., prediction-powered e-values
+(ICML 2025). Betting confidence sequences for bounded means: Waudby-Smith and
+Ramdas, JRSS-B 2024. This milestone applies a **betting CS to the PPI
+rectifier stream** (labeled residuals after subtracting a fixed judge), which
+is a practical stopping rule aligned with that literature; it is not a
+reimplementation of the full asymptotic PPI CS of arXiv 2505.18000.
 
 **Rectified observations.** Fix the full-population judge mean
 $\bar f_N = N^{-1}\sum_j f_j$ (known under the M1 setup where every item has a
