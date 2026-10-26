@@ -1,0 +1,43 @@
+{
+  "strengths": {
+    "alpaca-13b": -1.2093929445851874,
+    "claude-v1": 1.0854748240250847,
+    "gpt-3.5-turbo": 0.8997897674329038,
+    "gpt-4": 1.4834720020412289,
+    "llama-13b": -2.1155004585230506,
+    "vicuna-13b-v1.2": -0.14384319039097937
+  },
+  "se": {
+    "alpaca-13b": 0.16257214148772867,
+    "claude-v1": 0.14390572648947356,
+    "gpt-3.5-turbo": 0.10544613064554148,
+    "gpt-4": 0.1599166085733398,
+    "llama-13b": 0.18326580417517163,
+    "vicuna-13b-v1.2": 0.1077325527812929
+  },
+  "pairwise_prob": {
+    "alpaca-13b__vs__claude-v1": 0.09154890308011165,
+    "alpaca-13b__vs__gpt-3.5-turbo": 0.10820750869366558,
+    "alpaca-13b__vs__gpt-4": 0.06339569438221523,
+    "alpaca-13b__vs__llama-13b": 0.7122029797687729,
+    "alpaca-13b__vs__vicuna-13b-v1.2": 0.25625031870041476,
+    "claude-v1__vs__gpt-3.5-turbo": 0.5462883427620515,
+    "claude-v1__vs__gpt-4": 0.4017936343597809,
+    "claude-v1__vs__llama-13b": 0.9608709623199527,
+    "claude-v1__vs__vicuna-13b-v1.2": 0.7736991885522239,
+    "gpt-3.5-turbo__vs__gpt-4": 0.3580857523730279,
+    "gpt-3.5-turbo__vs__llama-13b": 0.9532601276935947,
+    "gpt-3.5-turbo__vs__vicuna-13b-v1.2": 0.7395503792406227,
+    "gpt-4__vs__llama-13b": 0.9733763909003084,
+    "gpt-4__vs__vicuna-13b-v1.2": 0.8358015150285746,
+    "llama-13b__vs__vicuna-13b-v1.2": 0.12221099127446516
+  },
+  "n_comparisons": 1437,
+  "n_questions": 80,
+  "method": "bradley_terry_mle_cluster_bootstrap",
+  "notes": [
+    "Strengths mean-zero; P(i>j)=sigmoid(theta_i-theta_j).",
+    "SEs from question_id cluster bootstrap (B=500).",
+    "Fit on non-tie comparisons only."
+  ]
+}

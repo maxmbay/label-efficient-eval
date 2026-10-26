@@ -13,6 +13,17 @@ venv/
 .mypy_cache/
 data/raw/
 data/cache/
+outputs/m2/**
+!outputs/m2/
+!outputs/m2/figure_m2.png
+!outputs/m2/headline_full.json
+!outputs/m2/bradley_terry.json
+!outputs/m2/metrics_full.csv
+!outputs/m2/run_meta_full.json
+!outputs/m2/judge_error_full.json
+!outputs/m2/metrics_judge_error.csv
+outputs/m2/*.parquet
+outputs/m2/*.log
 *.parquet
 *.arrow
 .ipynb_checkpoints/

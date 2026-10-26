@@ -1,0 +1,23 @@
+{
+  "pair": [
+    "gpt-3.5-turbo",
+    "gpt-4"
+  ],
+  "truth_human_majority": 0.3238095238095238,
+  "posterior_mean": 0.44394206590019164,
+  "posterior_interval_95": [
+    0.026542848767712717,
+    0.9633913546800613
+  ],
+  "covers_truth": true,
+  "diagnostics": {
+    "num_warmup": 200,
+    "num_samples": 200,
+    "seed": 20261026,
+    "n_obs": 339,
+    "n_units": 105,
+    "n_judges": 2
+  },
+  "inter_human_agree_nontie": 0.8270967741935484,
+  "note": "Posterior is P(A|A or B) from the population Dirichlet mix under the Dawid-Skene hierarchical model on decisive units; truth is the human majority win rate on the same units."
+}
