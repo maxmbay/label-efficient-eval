@@ -8,6 +8,7 @@ dependencies = [
   "numpy",
   "scipy",
   "pandas",
+  "pyarrow",
   "scikit-learn",
   "matplotlib",
   "datasets",
@@ -29,3 +30,6 @@ packages = ["src/lee"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "integration: hits the network or on-disk MT-Bench / ToxicChat cache",
+]
