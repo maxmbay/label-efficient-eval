@@ -1,0 +1,24 @@
+{
+  "tag": "smoke",
+  "R": 5,
+  "n_grid": [
+    50,
+    100,
+    200,
+    400,
+    800,
+    1600
+  ],
+  "seed_root": 20261026,
+  "N": 5654,
+  "truth": {
+    "toxicity": 0.13194198797311638,
+    "jailbreaking": 0.03608065086664308
+  },
+  "judges": [
+    "openai_moderation_max",
+    "weak_keyword"
+  ],
+  "headline_n": 200,
+  "headline_status": "pending_locked_run"
+}

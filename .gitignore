@@ -13,6 +13,8 @@ venv/
 .mypy_cache/
 data/raw/
 data/cache/
+outputs/m1/judge_scores/
 *.parquet
 *.arrow
 .ipynb_checkpoints/
+
